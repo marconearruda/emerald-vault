@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://emerald-vault/schemas/prompt.schema.json",
+  "title": "Emerald Prompt Vault — Registro de Prompt",
+  "type": "object",
+  "required": ["schema_version","id","title","content","category"],
+  "properties": {
+    "schema_version": { "type": "string", "default": "1.0" },
+    "id": { "type": "string", "pattern": "^prompt-[a-z0-9]+$" },
+    "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "short_description": { "type": "string", "maxLength": 500 },
+    "category": { "type": "string" },
+    "subcategory": { "type": "string" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "purpose": { "type": "string" },
+    "input_requirements": { "type": "array", "items": { "type": "string" } },
+    "expected_outputs": { "type": "array", "items": { "type": "string" } },
+    "compatible_tools": { "type": "array", "items": { "type": "string" } },
+    "workflow_stage": { "type": "string" },
+    "prompt_type": { "type": "string", "default": "universal" },
+    "content": { "type": "string", "minLength": 1 },
+    "usage_notes": { "type": "string" },
+    "version": { "type": "string", "default": "1.0" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "favorite": { "type": "boolean", "default": false },
+    "status": { "type": "string", "enum": ["active","archived"], "default": "active" }
+  }
+}
