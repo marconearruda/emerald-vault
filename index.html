@@ -5,28 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Emerald Prompt Vault Infinity — biblioteca pessoal, universal e expansível de prompts profissionais.">
 <meta name="theme-color" content="#0a0f0d">
-<meta name="color-scheme" content="dark light">
-<!--
-  ============================================================
-  GITHUB PAGES — NOTAS DE PUBLICAÇÃO
-  ------------------------------------------------------------
-  - Este arquivo deve ser salvo como `index.html` na raiz do
-    repositório para ser servido em https://usuario.github.io/repo/
-  - Nenhuma dependência externa: HTML, CSS, JS, metadados e
-    sementes estão todos incorporados neste único arquivo.
-  - Persistência: IndexedDB (biblioteca) + localStorage (tema).
-  - Clipboard API exige contexto seguro (HTTPS ou localhost).
-    GitHub Pages entrega HTTPS automaticamente.
-  - Não há backend, Service Worker, manifest PWA ou chamadas de rede.
-  - Totalmente compatível com file:// (funciona offline local).
-  ============================================================
--->
 <title>Emerald Prompt Vault — Biblioteca Pessoal de Prompts</title>
 <style>
 /* ================================================================
    EMERALD PROMPT VAULT INFINITY — Estilos
    Estrutura: TOKENS → RESET → LAYOUT → HEADER → SIDEBAR → GRID
-              → CARDS → MODAIS → FORMULÁRIOS → TOAST → RESPONSIVO
+              → CARDS → COLEÇÕES → CATEGORY-BAR → MODAIS → FORMS
+              → TOAST → RESPONSIVO
    ================================================================ */
 
 /* ============ TOKENS ============ */
@@ -45,6 +30,7 @@
   --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
   --mono:'SF Mono',Monaco,'Cascadia Code','Fira Code',Consolas,monospace;
   --t:.18s cubic-bezier(.4,0,.2,1);
+  --stack-offset: 7px;
 }
 [data-theme="light"] {
   --bg:#f6faf8; --bg-2:#eef4f1; --surface:#ffffff; --surface-2:#f3f8f6;
@@ -131,6 +117,8 @@ img,svg{display:block;max-width:100%}
 .btn svg{width:16px;height:16px;flex-shrink:0}
 .btn--primary svg{color:#fff}
 .hdr__actions .btn span.lbl{display:inline}
+.btn.is-muted{color:var(--text-dim)}
+.btn.is-muted svg{opacity:.85}
 
 /* ============ SIDEBAR ============ */
 .sidebar{
@@ -195,6 +183,31 @@ img,svg{display:block;max-width:100%}
 .chip button{color:inherit;font-size:14px;line-height:1;opacity:.7}
 .chip button:hover{opacity:1}
 
+/* ============ CATEGORY BAR ============ */
+.category-bar{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:14px 16px;margin-bottom:16px;border-radius:var(--radius);
+  background:var(--surface);border:1px solid var(--border);
+  animation:barIn .25s cubic-bezier(.4,0,.2,1);
+}
+.category-bar[hidden]{display:none}
+@keyframes barIn{
+  from{opacity:0;transform:translateY(-6px)}
+  to{opacity:1;transform:none}
+}
+.category-bar__info{
+  display:flex;flex-direction:column;gap:1px;min-width:0;flex:1;
+}
+.category-bar__eyebrow{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--text-dim);
+}
+.category-bar__title{
+  font-size:16px;font-weight:700;line-height:1.25;color:var(--text);
+  letter-spacing:-.01em;word-break:break-word;
+}
+.category-bar__count{font-size:12px;color:var(--text-muted)}
+
 /* ============ GRID & CARDS ============ */
 .grid{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
@@ -230,6 +243,116 @@ img,svg{display:block;max-width:100%}
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
   flex:1;
 }
+
+/* ============ COLEÇÕES EMPILHADAS ============ */
+.collection{
+  position:relative;
+  display:block;
+  width:100%;
+  padding:0 18px 18px 0; /* espaço p/ camadas empilhadas */
+  background:transparent;
+  border:none;
+  text-align:left;
+  cursor:pointer;
+  border-radius:var(--radius);
+  animation:colIn .28s cubic-bezier(.4,0,.2,1) both;
+}
+.collection:focus-visible{outline:none}
+.collection:focus-visible .collection__content{outline:2px solid var(--accent);outline-offset:3px}
+@keyframes colIn{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:none}
+}
+
+.collection__content{
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:18px;
+  min-height:140px;
+  border-radius:var(--radius);
+  background:var(--surface);
+  border:1px solid var(--border);
+  transition:transform var(--t),border-color var(--t),box-shadow var(--t),background var(--t);
+  overflow:hidden;
+}
+.collection__content::before{
+  content:"";
+  position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(135deg,transparent 55%,var(--accent-soft));
+  opacity:0;transition:opacity var(--t);
+}
+.collection:hover .collection__content{
+  border-color:var(--accent);
+  transform:translateY(-2px);
+  box-shadow:var(--shadow);
+}
+.collection:hover .collection__content::before{opacity:1}
+
+/* Camadas empilhadas (pseudo-elementos) */
+.collection::before,
+.collection::after{
+  content:"";
+  position:absolute;
+  inset:0 18px 18px 0;
+  border-radius:var(--radius);
+  background:var(--surface);
+  border:1px solid var(--border);
+  pointer-events:none;
+  z-index:1;
+  transition:transform var(--t),border-color var(--t),background var(--t);
+}
+.collection[data-stack="2"]::before,
+.collection[data-stack="3"]::before{
+  transform:translate(var(--stack-offset), var(--stack-offset));
+}
+.collection[data-stack="3"]::after{
+  transform:translate(calc(var(--stack-offset) * 2), calc(var(--stack-offset) * 2));
+}
+.collection:hover::before{transform:translate(calc(var(--stack-offset) + 2px), calc(var(--stack-offset) + 2px))}
+.collection[data-stack="2"]:hover::before,
+.collection[data-stack="3"]:hover::before{
+  border-color:var(--border-2);
+}
+.collection[data-stack="3"]:hover::after{
+  transform:translate(calc(var(--stack-offset) * 2 + 4px), calc(var(--stack-offset) * 2 + 4px));
+  border-color:var(--border-2);
+}
+
+.collection__badge{
+  align-self:flex-start;
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:var(--radius-full);
+  background:var(--accent-soft);color:var(--accent);
+  font-size:11px;font-weight:700;letter-spacing:.02em;
+  border:1px solid rgba(16,185,129,.25);
+}
+.collection__badge svg{width:12px;height:12px}
+
+.collection__title{
+  font-size:16px;font-weight:700;line-height:1.3;color:var(--text);
+  letter-spacing:-.01em;word-break:break-word;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.collection__preview{
+  font-size:12.5px;color:var(--text-muted);line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  flex:1;min-height:0;
+}
+.collection__cta{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:12px;font-weight:600;color:var(--accent);
+  opacity:.85;transition:opacity var(--t),transform var(--t);
+  margin-top:auto;
+}
+.collection__cta svg{width:13px;height:13px;transition:transform var(--t)}
+.collection:hover .collection__cta{opacity:1}
+.collection:hover .collection__cta svg{transform:translateX(2px)}
+
+/* Coleção com apenas 1 prompt: sem empilhamento */
+.collection[data-stack="1"]{padding:0}
 
 /* Empty state */
 .empty{
@@ -407,8 +530,11 @@ img,svg{display:block;max-width:100%}
   .mobile-only{display:inline-flex !important}
 }
 @media (max-width:560px){
-  .hdr__search input{font-size:16px} /* evita zoom em iOS */
+  .hdr__search input{font-size:16px}
   .grid{grid-template-columns:1fr;gap:12px}
+  .collection{padding:0 14px 14px 0}
+  .collection::before,.collection::after{inset:0 14px 14px 0}
+  :root{--stack-offset:6px}
   .main{padding:14px 12px 80px}
   .modal{padding:0;align-items:flex-end}
   .modal__box{
@@ -422,12 +548,16 @@ img,svg{display:block;max-width:100%}
   .form__row--2{grid-template-columns:1fr}
   .toast-root{left:12px;right:12px;bottom:12px}
   .toast{min-width:0;max-width:none}
+  .category-bar{padding:12px 14px;gap:10px}
 }
 .mobile-only{display:none}
 
 /* Reduced motion */
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+  .collection:hover .collection__content{transform:none}
+  .collection:hover::before,
+  .collection[data-stack="3"]:hover::after{transform:none}
 }
 </style>
 </head>
@@ -459,6 +589,13 @@ img,svg{display:block;max-width:100%}
       </button>
       <button class="btn btn--icon" id="btnExport" title="Exportar biblioteca" aria-label="Exportar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+      </button>
+      <button class="btn btn--icon" id="btnSound" title="Silenciar sons" aria-label="Silenciar sons" aria-pressed="true">
+        <svg id="iconSound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 5 6 9H2v6h4l5 4V5Z"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </svg>
       </button>
       <button class="btn btn--icon" id="btnTheme" title="Alternar tema" aria-label="Alternar tema">
         <svg id="iconTheme" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
@@ -504,6 +641,20 @@ img,svg{display:block;max-width:100%}
       </div>
 
       <div class="active-filters" id="activeFilters"></div>
+
+      <!-- Category bar (shown only in category view) -->
+      <div class="category-bar" id="categoryBar" hidden>
+        <button class="btn btn--ghost btn--sm" id="categoryBack" type="button" aria-label="Voltar às categorias">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          Voltar
+        </button>
+        <div class="category-bar__info">
+          <span class="category-bar__eyebrow">Coleção</span>
+          <h2 class="category-bar__title" id="categoryBarTitle">—</h2>
+          <span class="category-bar__count" id="categoryBarCount">0 prompts</span>
+        </div>
+      </div>
+
       <div class="grid" id="grid"></div>
     </main>
   </div>
@@ -1411,7 +1562,7 @@ Não pense como alguém convertendo um arquivo. Pense como UMA EQUIPE DE PRODUTO
 
 Primeiro COMPREENDER. Depois PRESERVAR. Depois ESTRUTURAR. Depois PAGINAR. Depois PROJETAR. Depois IMPLEMENTAR. Depois RESPONSIVIZAR. Depois TORNAR ACESSÍVEL. Depois IMPLEMENTAR PESQUISA, OUVIR, NAVEGAÇÃO, IMPRESSÃO, PDF E EPUB. Depois TESTAR. Depois AUDITAR. E somente então ENTREGAR O HTML FINAL.
 
-A regra central é: NÃO CONVERTA APENAS O TEXTO. CONVERTA O DOCUMENTO EM UMA EXPERIÊNCIA DIGITAL COMPLETA. PRESERVE O CONTEÚDO. PRESERVE A LÓGICA. MELHORE A EXPERIÊNCIA. MANTENHA A PAGINAÇÃO A4. MANTENHA O CONTEÚDO DENTRO DE 16 × 26 CM. FAÇA A EXPERIÊNCIA FUNCIONAR EM DESKTOP, TABLET E MOBILE. GARANTA QUE A IMPRESSÃO NÃO QUEBRE O CONTEÚDO. GARANTA NAVEGAÇÃO, PESQUISA, OUvir, PDF, EPUB E VOLTA AO TOPO. USE O HTML DE REFERÊNCIA, QUANDO FOR FORNECIDO, COMO PADRÃO DE EXPERIÊNCIA E QUALIDADE DE IMPLEMENTAÇÃO. MAS CRIE UMA IDENTIDADE VISUAL E UMA EXPERIÊNCIA ESPECÍFICAS PARA O DOCUMENTO RECEBIDO. O RESULTADO FINAL DEVE PARECER UM PRODUTO DIGITAL PROFISSIONAL, NÃO UMA SIMPLES CONVERSÃO AUTOMÁTICA.
+A regra central é: NÃO CONVERTA APENAS O TEXTO. CONVERTA O DOCUMENTO EM UMA EXPERIÊNCIA DIGITAL COMPLETA. PRESERVE O CONTEÚDO. PRESERVE A LÓGICA. MELHORE A EXPERIÊNCIA. MANTENHA A PAGINAÇÃO A4. MANTENHA O CONTEÚDO DENTRO DE 16 × 26 CM. FAÇA A EXPERIÊNCIA FUNCIONAR EM DESKTOP, TABLET E MOBILE. GARANTA QUE A IMPRESSÃO NÃO QUEBRE O CONTEÚDO. GARANTA NAVEGAÇÃO, PESQUISA, OUVIR, PDF, EPUB E VOLTA AO TOPO. USE O HTML DE REFERÊNCIA, QUANDO FOR FORNECIDO, COMO PADRÃO DE EXPERIÊNCIA E QUALIDADE DE IMPLEMENTAÇÃO. MAS CRIE UMA IDENTIDADE VISUAL E UMA EXPERIÊNCIA ESPECÍFICAS PARA O DOCUMENTO RECEBIDO. O RESULTADO FINAL DEVE PARECER UM PRODUTO DIGITAL PROFISSIONAL, NÃO UMA SIMPLES CONVERSÃO AUTOMÁTICA.
 </script>
 
 <script type="text/plain" id="seedDiamondContent">
@@ -2417,8 +2568,8 @@ IMPORTANTE: Cada prompt json, deve ter um botão de copiar, não copiar o destin
 <script>
 /* ================================================================
    EMERALD PROMPT VAULT INFINITY — JavaScript principal
-   Organização: CONFIG → DB → STATE → UTILS → RENDER → SEARCH
-                → MODAL → IMPORT/EXPORT → EVENTS → INIT
+   Organização: CONFIG → AUDIO → DB → STATE → UTILS → RENDER
+                → SEARCH → MODAL → IMPORT/EXPORT → EVENTS → INIT
    ================================================================ */
 (() => {
 'use strict';
@@ -2428,7 +2579,12 @@ const CONFIG = {
   DB_NAME: 'emerald-vault-db',
   DB_VERSION: 1,
   STORE: 'prompts',
-  SCHEMA_VERSION: '1.0'
+  SCHEMA_VERSION: '1.0',
+  SOUND_KEY: 'emerald-sound',
+  THEME_KEY: 'emerald-theme',
+  HOVER_COOLDOWN_MS: 90,
+  STARTUP_GAIN: 0.06,
+  HOVER_GAIN: 0.022
 };
 
 /* ============ UTILS ============ */
@@ -2437,15 +2593,17 @@ const $$ = sel => Array.from(document.querySelectorAll(sel));
 const uid = () => 'prompt-' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const nowISO = () => new Date().toISOString();
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => (
-  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
-));
+  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])
+);
 const debounce = (fn,ms=200) => { let t; return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);}; };
 const fmtDate = iso => {
   try { return new Date(iso).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}); }
   catch { return '—'; }
 };
+const slug = s => String(s || '').toLowerCase()
+  .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60) || 'prompt';
 
-/* Normaliza um registro vindo de fora para o esquema oficial */
 function normalizeRecord(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const arr = v => Array.isArray(v) ? v : (v ? [v] : []);
@@ -2475,6 +2633,96 @@ function normalizeRecord(raw) {
   if (!rec.title.trim()) return null;
   return rec;
 }
+
+/* ================================================================
+   AUDIO — Web Audio API (sons discretos de inicialização e hover)
+   Estratégia:
+   - Nunca falha se o navegador bloquear autoplay.
+   - Tenta tocar startup no carregamento; senão, no 1º gesto do usuário.
+   - Cooldown global para sons de hover.
+   - Preferência persistida em localStorage.
+   ================================================================ */
+const Audio = (() => {
+  let ctx = null;
+  let enabled = true;
+  let startupPlayed = false;
+  let lastHover = 0;
+
+  function readPref() {
+    try {
+      const v = localStorage.getItem(CONFIG.SOUND_KEY);
+      if (v === 'off') enabled = false;
+      else if (v === 'on') enabled = true;
+      // default: enabled = true
+    } catch {}
+  }
+  function savePref() {
+    try { localStorage.setItem(CONFIG.SOUND_KEY, enabled ? 'on' : 'off'); } catch {}
+  }
+  function ensureCtx() {
+    if (ctx) return ctx;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    try { ctx = new AC(); } catch { ctx = null; }
+    return ctx;
+  }
+  async function unlock() {
+    const c = ensureCtx();
+    if (!c) return false;
+    if (c.state === 'suspended') {
+      try { await c.resume(); } catch {}
+    }
+    return c.state === 'running';
+  }
+  function tone({ freq, dur, delay=0, gain=0.05, type='sine' }) {
+    const c = ctx;
+    if (!c || c.state !== 'running') return;
+    const t0 = c.currentTime + delay;
+    const osc = c.createOscillator();
+    const g = c.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(gain, t0 + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(g).connect(c.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.03);
+  }
+  function playStartup() {
+    if (!enabled || startupPlayed) return;
+    if (ctx?.state !== 'running') return;
+    startupPlayed = true;
+    // Arpejo suave C5 → G5 → C6 (assinatura sonora)
+    tone({ freq: 523.25, dur: 0.14, gain: CONFIG.STARTUP_GAIN * 0.85, type: 'sine' });
+    tone({ freq: 783.99, dur: 0.16, delay: 0.09, gain: CONFIG.STARTUP_GAIN, type: 'sine' });
+    tone({ freq: 1046.5, dur: 0.22, delay: 0.18, gain: CONFIG.STARTUP_GAIN * 0.7, type: 'sine' });
+  }
+  function playHover() {
+    if (!enabled) return;
+    const now = performance.now();
+    if (now - lastHover < CONFIG.HOVER_COOLDOWN_MS) return;
+    lastHover = now;
+    if (ctx?.state !== 'running') return;
+    tone({ freq: 1450, dur: 0.05, gain: CONFIG.HOVER_GAIN, type: 'sine' });
+  }
+  async function tryStartup() {
+    if (!enabled || startupPlayed) return;
+    const ok = await unlock();
+    if (ok) playStartup();
+  }
+  function setEnabled(v) {
+    enabled = !!v;
+    savePref();
+    if (enabled && !startupPlayed) {
+      unlock().then(ok => { if (ok) playStartup(); });
+    }
+  }
+  function isEnabled() { return enabled; }
+  function getStartupPlayed() { return startupPlayed; }
+
+  return { readPref, savePref, tryStartup, playHover, setEnabled, isEnabled, getStartupPlayed };
+})();
 
 /* ============ DB (IndexedDB) ============ */
 const DB = {
@@ -2533,20 +2781,14 @@ const DB = {
       req.onsuccess = () => res();
       req.onerror = () => rej(req.error);
     });
-  },
-  async clear() {
-    const store = await this.tx('readwrite');
-    return new Promise((res,rej) => {
-      const req = store.clear();
-      req.onsuccess = () => res();
-      req.onerror = () => rej(req.error);
-    });
   }
 };
 
 /* ============ STATE ============ */
 const State = {
   prompts: [],
+  view: 'categories',   // 'categories' | 'category'
+  currentCategory: '',
   filter: {
     q: '',
     category: '',
@@ -2599,6 +2841,30 @@ async function copyText(text, successMsg='Texto copiado para a área de transfer
   }
 }
 
+/* ============ MATCH / SORT HELPERS ============ */
+function matchesQuery(p, q) {
+  const hay = [
+    p.title, p.short_description, p.content, p.category, p.subcategory,
+    p.purpose, p.usage_notes,
+    ...(p.tags||[]),
+    ...(p.compatible_tools||[])
+  ].join(' ').toLowerCase();
+  return hay.includes(q);
+}
+
+function sortPrompts(arr, sortKey) {
+  const s = sortKey;
+  arr.sort((a,b) => {
+    if (s === 'title_asc') return a.title.localeCompare(b.title, 'pt-BR');
+    if (s === 'title_desc') return b.title.localeCompare(a.title, 'pt-BR');
+    if (s === 'created_desc') return (b.created_at||'').localeCompare(a.created_at||'');
+    if (s === 'updated_asc') return (a.updated_at||'').localeCompare(b.updated_at||'');
+    if (s === 'fav_first') return (b.favorite?1:0)-(a.favorite?1:0) || (b.updated_at||'').localeCompare(a.updated_at||'');
+    return (b.updated_at||'').localeCompare(a.updated_at||'');
+  });
+  return arr;
+}
+
 /* ============ SIDEBAR RENDER ============ */
 function renderSidebar() {
   const all = State.prompts;
@@ -2615,9 +2881,9 @@ function renderSidebar() {
   ];
   statusEl.innerHTML = items.map(it => {
     let isActive = false;
-    if (it.key === 'all') isActive = !State.filter.favOnly && State.filter.status === 'active';
-    if (it.key === 'fav') isActive = State.filter.favOnly && State.filter.status === 'active';
-    if (it.key === 'arch') isActive = State.filter.status === 'archived';
+    if (it.key === 'all') isActive = !State.filter.favOnly && State.filter.status === 'active' && State.view === 'categories';
+    if (it.key === 'fav') isActive = State.filter.favOnly && State.filter.status === 'active' && State.view === 'categories';
+    if (it.key === 'arch') isActive = State.filter.status === 'archived' && State.view === 'categories';
     return `<li class="sb__item ${isActive ? 'is-active' : ''}" data-status="${it.key}">
       <span>${esc(it.label)}</span><span class="count">${it.count}</span>
     </li>`;
@@ -2627,12 +2893,15 @@ function renderSidebar() {
   const catEl = $('#sbCategories');
   const catCounts = new Map();
   active.forEach(p => {
-    const c = p.category || 'Outros';
+    const c = p.category || 'Sem categoria';
     catCounts.set(c, (catCounts.get(c)||0) + 1);
   });
   const cats = Array.from(catCounts.entries()).sort((a,b) => a[0].localeCompare(b[0],'pt-BR'));
   catEl.innerHTML = cats.length
-    ? cats.map(([c,n]) => `<li class="sb__item ${State.filter.category===c?'is-active':''}" data-cat="${esc(c)}"><span>${esc(c)}</span><span class="count">${n}</span></li>`).join('')
+    ? cats.map(([c,n]) => {
+        const isActive = State.view === 'category' && State.currentCategory === c;
+        return `<li class="sb__item ${isActive?'is-active':''}" data-cat="${esc(c)}"><span>${esc(c)}</span><span class="count">${n}</span></li>`;
+      }).join('')
     : `<li class="sb__empty">Nenhuma categoria ainda.</li>`;
 
   // Tags
@@ -2646,83 +2915,203 @@ function renderSidebar() {
     ? tags.map(([t,n]) => `<span class="sb__tag ${State.filter.tag===t?'is-active':''}" data-tag="${esc(t)}">#${esc(t)} <span style="opacity:.6">${n}</span></span>`).join('')
     : `<span class="sb__empty">Nenhuma tag ainda.</span>`;
 
-  // Bind
+  // Bind — Status
   statusEl.querySelectorAll('.sb__item').forEach(el => el.onclick = () => {
     const k = el.dataset.status;
-    if (k === 'all') { State.filter.favOnly = false; State.filter.status = 'active'; }
-    if (k === 'fav') { State.filter.favOnly = true; State.filter.status = 'active'; }
-    if (k === 'arch') { State.filter.favOnly = false; State.filter.status = 'archived'; }
+    if (k === 'all') {
+      State.filter.favOnly = false;
+      State.filter.status = 'active';
+      State.view = 'categories';
+      State.currentCategory = '';
+      State.filter.category = '';
+    }
+    if (k === 'fav') {
+      State.filter.favOnly = true;
+      State.filter.status = 'active';
+      State.view = 'categories';
+      State.currentCategory = '';
+      State.filter.category = '';
+    }
+    if (k === 'arch') {
+      State.filter.favOnly = false;
+      State.filter.status = 'archived';
+      State.view = 'categories';
+      State.currentCategory = '';
+      State.filter.category = '';
+    }
     renderAll();
   });
+
+  // Bind — Categorias (abre a coleção)
   catEl.querySelectorAll('.sb__item').forEach(el => el.onclick = () => {
-    State.filter.category = State.filter.category === el.dataset.cat ? '' : el.dataset.cat;
-    State.filter.status = 'active';
-    renderAll();
+    openCategory(el.dataset.cat);
   });
+
+  // Bind — Tags (filtra em ambas as views)
   tagEl.querySelectorAll('.sb__tag').forEach(el => el.onclick = () => {
     State.filter.tag = State.filter.tag === el.dataset.tag ? '' : el.dataset.tag;
-    State.filter.status = 'active';
     renderAll();
   });
 }
 
-/* ============ FILTER & SORT ============ */
-function filterAndSort() {
-  const q = State.filter.q.trim().toLowerCase();
-  let arr = State.prompts.slice();
-  // status
-  arr = arr.filter(p => p.status === State.filter.status);
-  // categoria
-  if (State.filter.category) arr = arr.filter(p => p.category === State.filter.category);
-  // tag
-  if (State.filter.tag) arr = arr.filter(p => (p.tags||[]).includes(State.filter.tag));
-  // favorito
-  if (State.filter.favOnly) arr = arr.filter(p => p.favorite);
-  // busca
-  if (q) {
-    arr = arr.filter(p => {
-      const hay = [
-        p.title, p.short_description, p.content, p.category, p.subcategory,
-        p.purpose, p.usage_notes,
-        ...(p.tags||[]),
-        ...(p.compatible_tools||[])
-      ].join(' ').toLowerCase();
-      return hay.includes(q);
-    });
-  }
-  // sort
-  const s = State.sort;
-  arr.sort((a,b) => {
-    if (s === 'title_asc') return a.title.localeCompare(b.title, 'pt-BR');
-    if (s === 'title_desc') return b.title.localeCompare(a.title, 'pt-BR');
-    if (s === 'created_desc') return (b.created_at||'').localeCompare(a.created_at||'');
-    if (s === 'updated_asc') return (a.updated_at||'').localeCompare(b.updated_at||'');
-    if (s === 'fav_first') return (b.favorite?1:0)-(a.favorite?1:0) || (b.updated_at||'').localeCompare(a.updated_at||'');
-    return (b.updated_at||'').localeCompare(a.updated_at||''); // updated_desc
-  });
-  return arr;
+/* ============ NAVEGAÇÃO ENTRE VIEWS ============ */
+function openCategory(cat) {
+  State.view = 'category';
+  State.currentCategory = cat;
+  State.filter.category = cat;
+  State.filter.status = 'active';
+  // rola ao topo suavemente
+  try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch { window.scrollTo(0, 0); }
+  renderAll();
+}
+function closeCategory() {
+  State.view = 'categories';
+  State.currentCategory = '';
+  State.filter.category = '';
+  renderAll();
 }
 
-/* ============ CARD / GRID RENDER ============ */
+/* ============ MAIN RENDER ============ */
+function renderAll() {
+  renderSidebar();
+  renderGrid();
+}
+
 function renderGrid() {
   const grid = $('#grid');
-  const list = filterAndSort();
-  const total = State.prompts.filter(p => p.status === State.filter.status).length;
+  if (State.view === 'category' && State.currentCategory) {
+    renderCategoryDetail(grid);
+  } else {
+    renderCategoriesView(grid);
+  }
+}
 
-  // info + filtros ativos
-  $('#mainInfo').innerHTML = list.length
-    ? `<strong>${list.length}</strong> de ${total} prompt${total!==1?'s':''}`
-    : `Nenhum resultado em ${total} prompt${total!==1?'s':''}`;
+/* -------- VIEW: COLEÇÕES (agrupamento por categoria) -------- */
+function renderCategoriesView(grid) {
+  // Esconde a barra de categoria
+  $('#categoryBar').hidden = true;
+
+  const base = State.prompts.filter(p => p.status === State.filter.status);
+  const q = State.filter.q.trim().toLowerCase();
+
+  let prompts = base;
+  if (State.filter.favOnly) prompts = prompts.filter(p => p.favorite);
+  if (State.filter.tag) prompts = prompts.filter(p => (p.tags||[]).includes(State.filter.tag));
+  if (q) prompts = prompts.filter(p => matchesQuery(p, q));
+
+  // Agrupa por categoria
+  const groups = new Map();
+  prompts.forEach(p => {
+    const cat = p.category || 'Sem categoria';
+    if (!groups.has(cat)) groups.set(cat, []);
+    groups.get(cat).push(p);
+  });
+
+  const entries = Array.from(groups.entries())
+    .sort((a,b) => a[0].localeCompare(b[0],'pt-BR'));
+
+  // Info
+  const totalActive = State.prompts.filter(p => p.status === State.filter.status).length;
+  $('#mainInfo').innerHTML = entries.length
+    ? `<strong>${entries.length}</strong> categoria${entries.length!==1?'s':''} · <strong>${prompts.length}</strong> prompt${prompts.length!==1?'s':''}`
+    : `Nenhum resultado em ${totalActive} prompt${totalActive!==1?'s':''}`;
 
   renderActiveFilters();
 
-  if (!list.length) {
-    grid.innerHTML = renderEmptyState(total);
+  if (!entries.length) {
+    grid.innerHTML = renderEmptyState(totalActive);
     bindEmptyActions();
     return;
   }
 
-  grid.innerHTML = list.map(p => `
+  grid.innerHTML = entries.map(([cat, items]) => renderCollectionCard(cat, items)).join('');
+
+  grid.querySelectorAll('.collection').forEach(btn => {
+    btn.addEventListener('click', () => openCategory(btn.dataset.cat));
+  });
+}
+
+function renderCollectionCard(cat, items) {
+  const n = items.length;
+  const stack = n >= 3 ? '3' : n >= 2 ? '2' : '1';
+  const first = items[0] || {};
+  const preview = first.short_description || '';
+  const stackLabel = n >= 3 ? 'Coleção' : n === 2 ? 'Par' : 'Item único';
+  return `
+    <button class="collection" data-cat="${esc(cat)}" data-stack="${stack}" type="button"
+            aria-label="Abrir categoria ${esc(cat)} (${n} prompt${n!==1?'s':''})">
+      <span class="collection__content">
+        <span class="collection__badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 7h16M4 12h16M4 17h10"/>
+          </svg>
+          ${esc(stackLabel)} · ${n} prompt${n!==1?'s':''}
+        </span>
+        <span class="collection__title">${esc(cat)}</span>
+        <span class="collection__preview">${esc(preview) || '—'}</span>
+        <span class="collection__cta">
+          Abrir coleção
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </span>
+      </span>
+    </button>
+  `;
+}
+
+/* -------- VIEW: CATEGORIA (prompts individuais) -------- */
+function renderCategoryDetail(grid) {
+  const cat = State.currentCategory;
+  const base = State.prompts.filter(p => p.status === State.filter.status && (p.category || 'Sem categoria') === cat);
+  const q = State.filter.q.trim().toLowerCase();
+
+  let prompts = base;
+  if (State.filter.favOnly) prompts = prompts.filter(p => p.favorite);
+  if (State.filter.tag) prompts = prompts.filter(p => (p.tags||[]).includes(State.filter.tag));
+  if (q) prompts = prompts.filter(p => matchesQuery(p, q));
+  sortPrompts(prompts, State.sort);
+
+  // Barra da categoria
+  const bar = $('#categoryBar');
+  bar.hidden = false;
+  $('#categoryBarTitle').textContent = cat;
+  $('#categoryBarCount').textContent = `${prompts.length} prompt${prompts.length!==1?'s':''} exibido${prompts.length!==1?'s':''} de ${base.length}`;
+
+  $('#mainInfo').innerHTML = `<strong>${prompts.length}</strong> prompt${prompts.length!==1?'s':''} em <strong>${esc(cat)}</strong>`;
+
+  renderActiveFilters();
+
+  if (!prompts.length) {
+    grid.innerHTML = `
+      <div class="empty">
+        <svg class="empty__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <h2>Nenhum prompt encontrado nesta categoria</h2>
+        <p>Ajuste a pesquisa ou remova alguns filtros para ver mais resultados.</p>
+        <div class="empty__actions">
+          <button class="btn" data-act="clear-filters">Limpar filtros</button>
+          <button class="btn" data-act="back">Voltar às categorias</button>
+        </div>
+      </div>`;
+    grid.querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
+      if (b.dataset.act === 'clear-filters') {
+        State.filter.q = ''; State.filter.tag = ''; State.filter.favOnly = false;
+        $('#searchInput').value = '';
+        $('#searchWrap').classList.remove('has-value');
+        renderAll();
+      } else if (b.dataset.act === 'back') {
+        closeCategory();
+      }
+    });
+    return;
+  }
+
+  grid.innerHTML = prompts.map(renderPromptCard).join('');
+  bindPromptCardEvents(grid);
+}
+
+function renderPromptCard(p) {
+  return `
     <article class="card" data-id="${esc(p.id)}" tabindex="0" role="button" aria-label="Abrir prompt ${esc(p.title)}">
       <div class="card__head">
         <h3 class="card__title">${esc(p.title)}</h3>
@@ -2734,9 +3123,10 @@ function renderGrid() {
       </div>
       <p class="card__desc">${esc(p.short_description || 'Sem descrição.')}</p>
     </article>
-  `).join('');
+  `;
+}
 
-  // Eventos
+function bindPromptCardEvents(grid) {
   grid.querySelectorAll('.card').forEach(card => {
     const open = () => openDetail(card.dataset.id);
     card.addEventListener('click', e => {
@@ -2760,6 +3150,7 @@ function renderGrid() {
   }));
 }
 
+/* ============ EMPTY STATE ============ */
 function renderEmptyState(total) {
   if (!total) {
     return `
@@ -2786,7 +3177,7 @@ function renderEmptyState(total) {
       <svg class="empty__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
       </svg>
-      <h2>Nenhum prompt encontrado</h2>
+      <h2>Nenhum resultado encontrado</h2>
       <p>Ajuste a pesquisa ou remova alguns filtros para ver mais resultados.</p>
       <div class="empty__actions">
         <button class="btn" data-act="clear-filters">Limpar filtros</button>
@@ -2801,6 +3192,8 @@ function bindEmptyActions() {
     if (a === 'import') openImport();
     if (a === 'clear-filters') {
       State.filter = { q: '', category: '', tag: '', favOnly: false, status: 'active' };
+      State.view = 'categories';
+      State.currentCategory = '';
       $('#searchInput').value = '';
       $('#searchWrap').classList.remove('has-value');
       renderAll();
@@ -2812,23 +3205,16 @@ function renderActiveFilters() {
   const wrap = $('#activeFilters');
   const chips = [];
   if (State.filter.q) chips.push({k:'q', label:`Busca: "${State.filter.q}"`});
-  if (State.filter.category) chips.push({k:'category', label:`Categoria: ${State.filter.category}`});
   if (State.filter.tag) chips.push({k:'tag', label:`#${State.filter.tag}`});
   if (State.filter.favOnly) chips.push({k:'favOnly', label:'Somente favoritos'});
   wrap.innerHTML = chips.map(c => `<span class="chip" data-clear="${c.k}">${esc(c.label)}<button aria-label="Remover filtro">✕</button></span>`).join('');
   wrap.querySelectorAll('[data-clear]').forEach(el => el.onclick = () => {
     const k = el.dataset.clear;
     if (k === 'q') { State.filter.q = ''; $('#searchInput').value=''; $('#searchWrap').classList.remove('has-value'); }
-    if (k === 'category') State.filter.category = '';
     if (k === 'tag') State.filter.tag = '';
     if (k === 'favOnly') State.filter.favOnly = false;
     renderAll();
   });
-}
-
-function renderAll() {
-  renderSidebar();
-  renderGrid();
 }
 
 /* ============ MODAL ============ */
@@ -2843,10 +3229,8 @@ function openModal(contentHTML, opts={}) {
   m.innerHTML = `<div class="modal__box ${opts.wide?'modal__box--wide':''} ${opts.narrow?'modal__box--narrow':''}" role="document">${contentHTML}</div>`;
   m.classList.add('is-open');
   document.body.style.overflow = 'hidden';
-  // bind close
   m.querySelectorAll('[data-close]').forEach(b => b.onclick = closeModal);
   m.addEventListener('click', e => { if (e.target === m) closeModal(); }, { once: true });
-  // focus first focusable
   setTimeout(() => {
     const f = m.querySelector('input,button,textarea,select,[tabindex]:not([tabindex="-1"])');
     if (f) f.focus();
@@ -2912,10 +3296,8 @@ function openDetail(id) {
   `;
   openModal(body, { wide: true });
 
-  // Preenche o conteúdo como texto puro (segurança)
   $('#promptContent').textContent = p.content || '(vazio)';
 
-  // Ações
   $('#btnCopyFull').onclick = () => copyText(p.content, 'Prompt completo copiado.');
   $('#btnCopyJson').onclick = () => copyText(JSON.stringify(p, null, 2), 'Registro JSON copiado.');
   $('#btnExportOne').onclick = () => exportRecords([p], `prompt-${slug(p.title)}.json`);
@@ -2939,12 +3321,6 @@ function openDetail(id) {
     toast('Prompt excluído.', 'ok');
     closeModal(); renderAll();
   };
-}
-
-function slug(s) {
-  return String(s || '').toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60) || 'prompt';
 }
 
 /* ============ EDIT / NEW ============ */
@@ -3144,7 +3520,6 @@ function openImport() {
   $('#btnConfirmImport').onclick = async () => {
     if (!pending.length) return;
     await DB.putMany(pending);
-    // Atualiza estado
     pending.forEach(r => {
       const i = State.prompts.findIndex(x => x.id === r.id);
       if (i >= 0) State.prompts[i] = r; else State.prompts.push(r);
@@ -3179,7 +3554,21 @@ function openExport() {
   const all = State.prompts;
   const active = all.filter(p => p.status === 'active');
   const fav = active.filter(p => p.favorite);
-  const filtered = filterAndSort();
+
+  // Resultado atual (depende da view)
+  let filtered = [];
+  if (State.view === 'category' && State.currentCategory) {
+    filtered = State.prompts.filter(p => p.status === State.filter.status && (p.category || 'Sem categoria') === State.currentCategory);
+    if (State.filter.favOnly) filtered = filtered.filter(p => p.favorite);
+    if (State.filter.tag) filtered = filtered.filter(p => (p.tags||[]).includes(State.filter.tag));
+    if (State.filter.q) filtered = filtered.filter(p => matchesQuery(p, State.filter.q.trim().toLowerCase()));
+    sortPrompts(filtered, State.sort);
+  } else {
+    filtered = all.filter(p => p.status === State.filter.status);
+    if (State.filter.favOnly) filtered = filtered.filter(p => p.favorite);
+    if (State.filter.tag) filtered = filtered.filter(p => (p.tags||[]).includes(State.filter.tag));
+    if (State.filter.q) filtered = filtered.filter(p => matchesQuery(p, State.filter.q.trim().toLowerCase()));
+  }
 
   const body = `
     <div class="modal__head">
@@ -3229,12 +3618,30 @@ function openExport() {
 function setTheme(t) {
   State.theme = t;
   document.documentElement.setAttribute('data-theme', t);
-  try { localStorage.setItem('emerald-theme', t); } catch {}
-  // atualiza ícone
+  try { localStorage.setItem(CONFIG.THEME_KEY, t); } catch {}
   const icon = $('#iconTheme');
   if (icon) icon.innerHTML = t === 'dark'
     ? `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/>`
     : `<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>`;
+}
+
+/* ============ SOUND TOGGLE UI ============ */
+function updateSoundButton() {
+  const btn = $('#btnSound');
+  const icon = $('#iconSound');
+  if (!btn || !icon) return;
+  const on = Audio.isEnabled();
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  btn.setAttribute('aria-label', on ? 'Silenciar sons' : 'Ativar sons');
+  btn.setAttribute('title', on ? 'Silenciar sons' : 'Ativar sons');
+  btn.classList.toggle('is-muted', !on);
+  icon.innerHTML = on
+    ? `<path d="M11 5 6 9H2v6h4l5 4V5Z"/>
+       <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+       <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>`
+    : `<path d="M11 5 6 9H2v6h4l5 4V5Z"/>
+       <line x1="22" y1="9" x2="16" y2="15"/>
+       <line x1="16" y1="9" x2="22" y2="15"/>`;
 }
 
 /* ============ EVENTS ============ */
@@ -3247,18 +3654,43 @@ function bindEvents() {
     renderGrid();
   }, 160));
   si.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { si.value=''; State.filter.q=''; $('#searchWrap').classList.remove('has-value'); renderGrid(); }
+    if (e.key === 'Escape') {
+      si.value=''; State.filter.q='';
+      $('#searchWrap').classList.remove('has-value');
+      renderGrid();
+    }
   });
-  $('#searchClear').onclick = () => { si.value=''; State.filter.q=''; $('#searchWrap').classList.remove('has-value'); renderGrid(); si.focus(); };
+  $('#searchClear').onclick = () => {
+    si.value=''; State.filter.q='';
+    $('#searchWrap').classList.remove('has-value');
+    renderGrid(); si.focus();
+  };
 
   // Sort
   $('#sortSel').onchange = e => { State.sort = e.target.value; renderGrid(); };
 
-  // Novo / Import / Export / Tema
+  // Novo / Import / Export / Tema / Som
   $('#btnNew').onclick = () => openEdit();
   $('#btnImport').onclick = openImport;
   $('#btnExport').onclick = openExport;
   $('#btnTheme').onclick = () => setTheme(State.theme === 'dark' ? 'light' : 'dark');
+
+  $('#btnSound').onclick = async () => {
+    // Alterna o estado
+    const next = !Audio.isEnabled();
+    Audio.setEnabled(next);
+    updateSoundButton();
+    if (next) {
+      toast('Sons ativados.', 'ok');
+      // desbloqueia contexto em gesto do usuário
+      await Audio.tryStartup();
+    } else {
+      toast('Sons silenciados.', 'ok');
+    }
+  };
+
+  // Botão "Voltar" da category-bar
+  $('#categoryBack').onclick = () => closeCategory();
 
   // Sidebar mobile
   const sb = $('#sidebar'), sbb = $('#sbBackdrop');
@@ -3279,6 +3711,17 @@ function bindEvents() {
     }
     if (e.key === 'n' || e.key === 'N') { if (!e.ctrlKey && !e.metaKey) { e.preventDefault(); openEdit(); } }
   });
+
+  // Hover sound (delegação) — só dispara ao ENTRAR em .card ou .collection
+  const grid = $('#grid');
+  grid.addEventListener('pointerover', (e) => {
+    if (e.pointerType === 'touch') return;
+    const card = e.target.closest('.card, .collection');
+    if (!card) return;
+    const related = e.relatedTarget;
+    if (related && card.contains(related)) return; // movimento interno
+    Audio.playHover();
+  }, { passive: true });
 }
 
 /* ============ SEED ============ */
@@ -3345,9 +3788,14 @@ async function seedIfEmpty() {
 async function init() {
   // Tema
   let savedTheme = 'dark';
-  try { savedTheme = localStorage.getItem('emerald-theme') || 'dark'; } catch {}
+  try { savedTheme = localStorage.getItem(CONFIG.THEME_KEY) || 'dark'; } catch {}
   setTheme(savedTheme);
 
+  // Som
+  Audio.readPref();
+  updateSoundButton();
+
+  // DB
   try {
     await DB.open();
     await seedIfEmpty();
@@ -3360,6 +3808,19 @@ async function init() {
 
   bindEvents();
   renderAll();
+
+  // Tenta tocar som de inicialização
+  // 1) Tentativa imediata (pode falhar por autoplay policy)
+  Audio.tryStartup();
+
+  // 2) Fallback no primeiro gesto legítimo do usuário
+  const fallback = () => {
+    Audio.tryStartup();
+    window.removeEventListener('pointerdown', fallback, true);
+    window.removeEventListener('keydown', fallback, true);
+  };
+  window.addEventListener('pointerdown', fallback, true);
+  window.addEventListener('keydown', fallback, true);
 }
 
 document.addEventListener('DOMContentLoaded', init);
